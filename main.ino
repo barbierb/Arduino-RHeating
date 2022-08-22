@@ -33,13 +33,9 @@ Relay v3 = Relay(6);
 // GPIO where the DS18B20 is/are connected to
 #define DS18B20PIN_ALL    7
 
-#define BUTTON_LEFT       A0
-#define BUTTON_MIDDLE     A3
-#define BUTTON_RIGHT      A5
-
-Button button_left(BUTTON_LEFT, 300);
-Button button_mid(BUTTON_MIDDLE, 300);
-Button button_right(BUTTON_RIGHT, 300);
+Button button_left(A0, 300);
+Button button_mid(A3, 300);
+Button button_right(A5, 300);
 
 // Setup a oneWire instance to communicate with any OneWire devices
 OneWire oneWire(DS18B20PIN_ALL);
@@ -67,6 +63,8 @@ int RT_MAX;
 Thread thread1 = Thread();
 Thread thread2 = Thread();
 Thread thread3 = Thread();
+
+long lastScreenUpdate;
 
 int eeAddr = 0;
 
@@ -190,10 +188,18 @@ void loop() {
   Serial.print(right);
   Serial.println();
 
+  if(menu > 0 && millis() > lastScreenUpdate + 15000) {
+      tft.fillScreen(ST7735_BLACK);
+      menu = 0;
+      thread3.enabled = true;
+      return;
+  }
+
   if(menu == 0 && mid == 0) {
     menu = 1;
     thread3.enabled = false;
     tft.fillScreen(ST7735_BLACK); 
+    lastScreenUpdate = millis(); 
     updateScreen();
     
   } else if(menu == 1) {
@@ -201,14 +207,17 @@ void loop() {
     if(left == 0) {
       RT_MAX-=1;
       EEPROM.put(eeAddr+sizeof(int)*2, RT_MAX);
+      lastScreenUpdate = millis(); 
       updateScreen();
-    }else if(right == 0){
+    }else if(right == 0) {
       RT_MAX+=1;
       EEPROM.put(eeAddr+sizeof(int)*2, RT_MAX);
+      lastScreenUpdate = millis(); 
       updateScreen();
     } else if(mid == 0) {
       tft.fillScreen(ST7735_BLACK); 
       menu = 2;
+      lastScreenUpdate = millis(); 
       updateScreen();
     }
 
@@ -217,24 +226,29 @@ void loop() {
     if(left == 0) {
       T2_MAX-=1;
       EEPROM.put(eeAddr, T2_MAX);
+      lastScreenUpdate = millis(); 
       updateScreen();
     }else if(right == 0){
       T2_MAX+=1;
       EEPROM.put(eeAddr, T2_MAX);
+      lastScreenUpdate = millis(); 
       updateScreen();
     } else if(mid == 0) {
       tft.fillScreen(ST7735_BLACK); 
       menu = 3;
+      lastScreenUpdate = millis(); 
       updateScreen();
     }
   } else if(menu == 3) {
     if(left == 0) {
       T3_MAX-=1;
       EEPROM.put(eeAddr+sizeof(int), T3_MAX);
+      lastScreenUpdate = millis(); 
       updateScreen();
     }else if(right == 0){
       T3_MAX+=1;
       EEPROM.put(eeAddr+sizeof(int), T3_MAX);
+      lastScreenUpdate = millis(); 
       updateScreen();
     } else if(mid == 0) {
       tft.fillScreen(ST7735_BLACK);
@@ -581,35 +595,3 @@ void centeredString(const char *buf, int x, int y)
     tft.setCursor(x - w / 2, y);
     tft.print(buf);
 }
-
-
-/**
- * Adding hysteresis behavior to your code is not difficult. You just need to store the state you're in and make the thresholds for transitioning into another state dependent on that.
-
-You can use an enum to store the state:
-
-enum BatteryStates {
-  Red, Orange, Green
-};
-Then, instead of defining and checking against one threshold value, define two thresholds for each transition, separated by so much that you don't observe the undesired flip-flopping behavior.
-
-For example, when transitioning from Green to Orange you could do something like this:
-
-if ((state == Green) && (battery < 690))
-  state = Orange;
-And the other direction would use a slightly higher threshold
-
-if ((state == Orange) && (battery > 700))
-  state = Green;
-so that small fluctuations of the voltage do not cause flip-flopping.
-
-(Note that my code assumes
-
-int battery = analogRead(BatteryVoltagePin);
-The variable state should be declared and initialized like so:
-
-enum BatteryStates state = Green;
-Instead of an enum you could use a simple int and map each state to a number (e.g. red = 1, orange = 2, green = 3), but using enum makes the code easier to read and write. (In fact enum does use integer numbers.)
-
-I might also use a switch statement instead of an if chain to implement the transitions, but that's a matter of taste.)
-*/
