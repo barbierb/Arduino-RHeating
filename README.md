@@ -3,24 +3,30 @@
 **R-Heating** is a C++ program meant to be run on Arduino UNO. This program does control the heating system of a house using relays and temperature sensors.
 
 ## 🚊 Usage
- >  Program starts with a splash screen
- ![enter image description here](https://github.com/barbierb/Arduino-RHeating/blob/main/docs/splash.PNG?raw=true)
+> Program starts with a splash screen
+> 
+> ![enter image description here](https://github.com/barbierb/Arduino-RHeating/blob/main/docs/splash.PNG?raw=true)
 
  
 > Prints all component states, stops if one is disconnected or malfunctioning
-![Blockquote](https://github.com/barbierb/Arduino-RHeating/blob/main/docs/checks.PNG?raw=true)
+> 
+> ![Blockquote](https://github.com/barbierb/Arduino-RHeating/blob/main/docs/checks.PNG?raw=true)
 
 > Main screen, showing all temperatures and relays states
-![enter image description here](https://github.com/barbierb/Arduino-RHeating/blob/main/docs/main.PNG?raw=true)
+> 
+> ![enter image description here](https://github.com/barbierb/Arduino-RHeating/blob/main/docs/main.PNG?raw=true)
 
 > If you long-press the middle button, you can modify the wanted temperature for the underfloor/room heating.
-![enter image description here](https://github.com/barbierb/Arduino-RHeating/blob/main/docs/rtlimit.PNG?raw=true)
+> 
+> ![enter image description here](https://github.com/barbierb/Arduino-RHeating/blob/main/docs/rtlimit.PNG?raw=true)
 
 > If you press the middle button again, you will be able to modify the high temperature storage limit
-![enter image description here](https://github.com/barbierb/Arduino-RHeating/blob/main/docs/htlimit.PNG?raw=true)
+> 
+> ![enter image description here](https://github.com/barbierb/Arduino-RHeating/blob/main/docs/htlimit.PNG?raw=true)
 
 > If you press the middle button again, you will be able to modify the low temperature storage limit
-![enter image description here](https://github.com/barbierb/Arduino-RHeating/blob/main/docs/ltlimit.PNG?raw=true)
+> 
+> ![enter image description here](https://github.com/barbierb/Arduino-RHeating/blob/main/docs/ltlimit.PNG?raw=true)
 
 > If you don't press anything while in config screens, it will come back to main one in 15 seconds
 
