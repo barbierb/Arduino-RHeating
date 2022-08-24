@@ -13,8 +13,8 @@ void Relay::turnOn() {
     return;
   state = ON;
   digitalWrite(pin, state);
-  Serial.print(F("turned ON pin "));
-  Serial.println(pin);
+  /*Serial.print(F("turned ON pin "));
+  Serial.println(pin);*/
 }
 
 void Relay::turnOff() {
@@ -22,11 +22,14 @@ void Relay::turnOff() {
     return;
   state = OFF;
   digitalWrite(pin, state);
-  Serial.print(F("turned OFF pin "));
-  Serial.println(pin);
+  /*Serial.print(F("turned OFF pin "));
+  Serial.println(pin);*/
 }
 
+// TODO maybe needs to be delayed at every toggled states ?
 void Relay::toggle(RelayState newState) {
+  if(newState == state)
+    return;
   state = newState;
   digitalWrite(pin, newState);
 }
