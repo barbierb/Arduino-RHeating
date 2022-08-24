@@ -138,17 +138,17 @@ void setup() {
     float temp = sensors.getTempC(sensorsIds[i]);
 
     if(i==0)
-      tft.print(F(" T1="));
+      tft.print(F("T1="));
     else if(i==1)
-      tft.print(F(" T2="));
+      tft.print(F(",T2="));
     else if(i==2)
-      tft.print(F(" T3="));
+      tft.print(F(",T3="));
     else if(i==3)
-      tft.print(F(" T4="));
+      tft.print(F(",T4="));
     else if(i==4)
-      tft.print(F(" T5="));
+      tft.print(F(",T5="));
     else if(i==5)
-      tft.print(F(" RT="));
+      tft.print(F(",RT="));
 
     if(temp == DEVICE_DISCONNECTED_C) {
       tft.print(F("DISCONNECTED"));
@@ -163,11 +163,11 @@ void setup() {
   tft.fillScreen(ST7735_BLACK); 
 
   thread1.onRun(updateTemp);
-  thread1.setInterval(1000);
+  thread1.setInterval(500);
   thread2.onRun(updateLogic);
-  thread2.setInterval(1000);
-  thread3.onRun(updateScreen);
-  thread3.setInterval(500);
+  thread2.setInterval(500);
+  //thread3.onRun(updateScreen);
+  //thread3.setInterval(500);
 }
 
 int menu = 0;
@@ -183,10 +183,6 @@ void loop() {
   int left = button_left.read();
   int mid = button_mid.read();
   int right = button_right.read();
-  Serial.print(left);
-  Serial.print(mid);
-  Serial.print(right);
-  Serial.println();
 
   if(menu > 0 && millis() > lastScreenUpdate + 15000) {
       tft.fillScreen(ST7735_BLACK);
@@ -459,10 +455,20 @@ bool updateTemp(void*) {
     float temp = sensors.getTempC(sensorsIds[i]);
     sensorsTemperature[i] = temp;
     
-    Serial.print(i);
-    Serial.print("=");
+    if(i==0)
+      Serial.print(F("T1 SOLAR HT:"));
+    else if(i==1)
+      Serial.print(F(",T2 STO HT:"));
+    else if(i==2)
+      Serial.print(F(",T3 STO LT:"));
+    else if(i==3)
+      Serial.print(F(",T4 SOLAR LT:"));
+    else if(i==4)
+      Serial.print(F(",T5 UNDERF:"));
+    else if(i==5)
+      Serial.print(F(",RT:"));
+      
     Serial.print(temp);
-    Serial.print(" ");
 
     if(temp == DEVICE_DISCONNECTED_C) {
       
@@ -502,39 +508,48 @@ void updateLogic() {
   }
 
   logicHT();
-  logicLT();
+  //logicLT();
 }
+
+bool isHeatingHT = false;
 
 void logicHT() {
 
   float t1 = sensorsTemperature[0];
   float t2 = sensorsTemperature[1];
   float t3 = sensorsTemperature[2];
-  float rt = sensorsTemperature[5];
-  
-  if(t2 > T2_MAX && t3 > T3_MAX) { 
-    
-    p1.turnOff();
-    v3.turnOff();
-    return;
-    
-  }
-  
-  if(t1 > t2 && t2 < T2_MAX) {
-    
-    v3.turnOff();    // default state is HT SOLAR to HT STORAGE
-    p1.turnOn();     // activates pump
-    return;
-    
+
+  int deadzone_in_celcius = 2;
+  int deadzone_half = deadzone_in_celcius / 2;
+
+  RelayState p1state = p1.getState();
+  RelayState v3state = v3.getState();
+
+  if(isHeatingHT == false) {
+    if(t1 > t3 && t3 < T3_MAX - deadzone_half) {
+      p1state = ON;
+      v3state = ON;
+    }
+    if(t3 > t1 || t3 > T3_MAX + deadzone_half) {
+      p1state = OFF;
+      v3state = OFF;
+    }
   }
 
-  if(t1 > t3 && t3 < T3_MAX) {
-    
-    p1.turnOn();      // activates pump
-    v3.turnOn();      // activated state where HT SOLAR to LT STORAGE
-    return;
-    
+  if(t1 > t2 && t2 < T2_MAX - deadzone_half) {
+      p1state = ON;
+      v3state = OFF;
+      isHeatingHT = true;
   }
+
+  if(t2 > t1 || t2 > T2_MAX + deadzone_half) {
+    p1state = OFF;
+    v3state = OFF;
+    isHeatingHT = false;
+  }
+
+  p1.toggle(p1state);
+  v3.toggle(v3state);
 }
 
 void logicLT() {
